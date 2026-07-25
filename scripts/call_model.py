@@ -139,7 +139,7 @@ def call_model(
 
 
 def extract_content(response: dict) -> str:
-    """从 API 响应中提取文本内容，处理 reasoning 模型。"""
+    """从 API 响应中提取文本内容，处理推理模型。"""
     choices = response.get("choices", [])
     if not choices:
         return ""
@@ -147,13 +147,19 @@ def extract_content(response: dict) -> str:
     message = choices[0].get("message", {})
     content = message.get("content", "")
 
-    # 处理推理模型（如 glm-5.2）的 reasoning_content
-    reasoning = message.get("reasoning_content", "")
+    # 处理推理模型
+    # DeepSeek V4 系列用 "reasoning" 字段（Ollama 格式）
+    # GLM-5.2 用 "reasoning_content" 字段（ZAI 格式）
+    reasoning = message.get("reasoning") or message.get("reasoning_content") or ""
     if reasoning:
-        # 去掉 reasoning 中的 think 标签
         reasoning = re.sub(r"<\|think\|>.*?</\|think\|>", "", reasoning, flags=re.DOTALL).strip()
         if reasoning:
             content = f"{reasoning}\n\n---\n\n{content}" if content else reasoning
+
+    # 如果 content 仍为空但 finish_reason 是 "length"，说明 reasoning 被截断
+    # 此时尝试从 reasoning 取最后一段
+    if not content.strip() and choices[0].get("finish_reason") == "length":
+        content = reasoning
 
     return content.strip()
 
