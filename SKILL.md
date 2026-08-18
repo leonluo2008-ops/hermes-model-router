@@ -3,7 +3,9 @@ name: hermes-model-router
 description: |-
   多模型快速调用工具集 — 不切换主模型，直接调指定模型 API 处理任务。
   支持 Ollama Cloud（qwen3.5/kimi/deepseek-v4-pro/flash/gemma4）、
-  聚鑫（gemini-3.5-flash）、ZAI（glm-5.2）。
+  聚鑫（gemini-3.5-flash）、ZAI（glm-5.2）、
+  OmniRoute 本地网关（jy/deepseek-v4-flash、jy/deepseek-v4-pro、
+  jy/glm-5.2、jy/kimi-k2.7-code = 基元律动经 127.0.0.1:20128 中转）。
   触发词：用XX模型、让XX处理、调XX模型、call_model
 ---
 
@@ -73,3 +75,15 @@ python3 scripts/call_model.py --list-models
 - **用完即扔**：每次调用独立，不残留任何状态
 - **共享 ENV**：API key 从 `~/.hermes/.env` 读取，与 Hermes 同一套
 - **纯标准库**：零外部依赖，`pip install` 都不需要
+
+## 临时切换 vs 直接调 API
+
+用户说"用 XX 模型"时有两种意图：
+
+| 意图 | 做法 | 副作用 |
+|---|---|---|
+| **接下来整段对话都用 XX** | `/model X --session`（gateway 内） | 当前对话主模型切换，不改全局 |
+| **只是这个任务让 XX 看一下** | `call_model.py` 或 curl 调 API | 零副作用，结果回来继续用原模型 |
+
+详见 `references/temporary-model-switching.md`。
+

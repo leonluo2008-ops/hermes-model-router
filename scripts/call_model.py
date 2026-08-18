@@ -49,6 +49,16 @@ PROVIDERS = {
         "key_env": "ZAI_API_KEY",
         "models": ["glm-5.2"],
     },
+    "omniroute": {
+        "base_url": "http://127.0.0.1:20128/v1",
+        "key_env": "OMNIROUTE_API_KEY",
+        "models": [
+            "jy/deepseek-v4-flash",
+            "jy/deepseek-v4-pro",
+            "jy/glm-5.2",
+            "jy/kimi-k2.7-code",
+        ],
+    },
 }
 
 # ── 模型 → Provider 反向索引 ──
@@ -117,6 +127,7 @@ def call_model(
             "messages": messages,
             "max_tokens": max_tokens,
             "temperature": temperature,
+            "stream": False,
         }
     ).encode("utf-8")
 
@@ -126,7 +137,11 @@ def call_model(
 
     try:
         resp = urlopen(req, timeout=300)
-        return json.loads(resp.read().decode("utf-8"))
+        raw = resp.read().decode("utf-8")
+        # 兼容强制流式的网关：body 以 data: 开头时聚合 SSE chunk
+        if raw.lstrip().startswith("data:"):
+            return _aggregate_sse(raw)
+        return json.loads(raw)
     except URLError as e:
         # 尝试读取错误响应体
         error_body = ""
@@ -136,6 +151,45 @@ def call_model(
             except Exception:
                 pass
         sys.exit(f"API 调用失败: {e}\n{error_body}")
+
+
+def _aggregate_sse(raw: str) -> dict:
+    """聚合 SSE 流式响应为单个 chat.completion 对象（兼容强制流式的网关）。"""
+    content_parts: list[str] = []
+    reasoning_parts: list[str] = []
+    final = {
+        "id": "", "object": "chat.completion", "created": 0, "model": "",
+        "choices": [{"index": 0, "message": {"role": "assistant", "content": ""}, "finish_reason": None}],
+        "usage": None,
+    }
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line.startswith("data:"):
+            continue
+        payload = line[5:].strip()
+        if payload == "[DONE]":
+            break
+        try:
+            chunk = json.loads(payload)
+        except json.JSONDecodeError:
+            continue
+        final["id"] = final["id"] or chunk.get("id", "")
+        final["created"] = final["created"] or chunk.get("created", 0)
+        final["model"] = final["model"] or chunk.get("model", "")
+        if chunk.get("usage"):
+            final["usage"] = chunk["usage"]
+        for ch in chunk.get("choices", []):
+            delta = ch.get("delta", {})
+            content_parts.append(delta.get("content") or "")
+            reasoning_parts.append(delta.get("reasoning_content") or delta.get("reasoning") or "")
+            if ch.get("finish_reason"):
+                final["choices"][0]["finish_reason"] = ch["finish_reason"]
+    final["choices"][0]["message"]["content"] = "".join(content_parts)
+    msg = final["choices"][0]["message"]
+    reasoning = "".join(reasoning_parts)
+    if reasoning:
+        msg["reasoning_content"] = reasoning
+    return final
 
 
 def extract_content(response: dict) -> str:
