@@ -10,8 +10,9 @@ call_model.py — 多模型快速调用工具
 支持模型:
   Ollama Cloud: qwen3.5:397b-cloud, kimi-k2.7-code:cloud, deepseek-v4-pro:cloud,
                 deepseek-v4-flash:cloud, gemma4:31b-cloud
-  聚鑫:         gemini-3.5-flash
+  聚鑫:         gemini-3.5-flash, gpt-5.6-sol
   ZAI:          glm-5.2
+  OmniRoute:   jy/* (deepseek/glm/kimi/qwen), jxgpt/gpt-5.6-sol
 
 API key 从 ~/.hermes/.env 读取，与 Hermes 共享。
 """
@@ -57,6 +58,9 @@ PROVIDERS = {
             "jy/deepseek-v4-pro",
             "jy/glm-5.2",
             "jy/kimi-k2.7-code",
+            "jy/qwen3.8-max",
+            "jxgpt/gpt-5.6-sol",
+            "qwen3.8",
         ],
     },
 }
