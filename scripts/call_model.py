@@ -45,6 +45,11 @@ PROVIDERS = {
         "key_env": "JUXIN_API_KEY",
         "models": ["gemini-3.5-flash"],
     },
+    "juxin-gpt": {
+        "base_url": "https://api.jxincm.cn/v1",
+        "key_file": "/home/luo/OneDrive-Hermes-Exchange/聚鑫gpt-key.txt",
+        "models": ["gpt-5.6-sol", "gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol-max", "gpt-5.6-sol-ultra"],
+    },
     "zai": {
         "base_url": "https://open.bigmodel.cn/api/coding/paas/v4",
         "key_env": "ZAI_API_KEY",
@@ -100,9 +105,19 @@ def resolve_provider(model: str) -> tuple[str, str, str]:
 
     cfg = PROVIDERS[provider_name]
     base_url = cfg["base_url"]
-    key_env = cfg["key_env"]
 
-    # 从环境变量读取（系统 env 优先，fallback 到 .env）
+    # ① 优先 key_file（文件内第一行非空为 key）
+    if cfg.get("key_file"):
+        kf = Path(cfg["key_file"])
+        if not kf.exists():
+            sys.exit(f"错误: key 文件不存在: {kf}")
+        key_lines = [l.strip() for l in kf.read_text(encoding="utf-8").splitlines() if l.strip()]
+        if not key_lines:
+            sys.exit(f"错误: key 文件为空: {kf}")
+        return provider_name, base_url, key_lines[0]
+
+    # ② 环境变量读取（系统 env 优先，fallback 到 .env）
+    key_env = cfg["key_env"]
     api_key = os.environ.get(key_env)
     if not api_key:
         hermes_home = Path(os.environ.get("HERMES_HOME", Path.home() / ".hermes"))
