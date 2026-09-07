@@ -43,7 +43,7 @@ PROVIDERS = {
     "juxin": {
         "base_url": "https://api.jxincm.cn/v1",
         "key_env": "JUXIN_API_KEY",
-        "models": ["gemini-3.5-flash"],
+        "models": ["gemini-3.5-flash", "gemini-3.6-flash"],
     },
     "juxin-gpt": {
         "base_url": "https://api.jxincm.cn/v1",

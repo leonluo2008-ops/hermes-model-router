@@ -3,9 +3,9 @@ name: hermes-model-router
 description: |-
   多模型快速调用工具集 — 不切换主模型，直接调指定模型 API 处理任务。
   支持 Ollama Cloud（qwen3.5/kimi/deepseek-v4-pro/flash/gemma4）、
-  聚鑫（gemini-3.5-flash）、ZAI（glm-5.2）、
+  聚鑫（gemini-3.5-flash、gpt-5.6-sol）、ZAI（glm-5.2）、
   OmniRoute 本地网关（jy/deepseek-v4-flash、jy/deepseek-v4-pro、
-  jy/glm-5.2、jy/kimi-k2.7-code = 基元律动经 127.0.0.1:20128 中转）。
+  jy/glm-5.2、jy/kimi-k2.7-code、jxgpt/gpt-5.6-sol = 经 127.0.0.1:20128 中转）。
   触发词：用XX模型、让XX处理、调XX模型、call_model
 ---
 
