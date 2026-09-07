@@ -47,7 +47,7 @@ PROVIDERS = {
     },
     "juxin-gpt": {
         "base_url": "https://api.jxincm.cn/v1",
-        "key_file": "/home/luo/OneDrive-Hermes-Exchange/聚鑫gpt-key.txt",
+        "key_file": "/home/luo/OneDrive-Hermes-Exchange/凭证/聚鑫gpt-key.txt",
         "models": ["gpt-5.6-sol", "gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol-max", "gpt-5.6-sol-ultra"],
     },
     "zai": {
